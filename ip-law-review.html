@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科技法導論複習｜智慧財產權</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Cormorant Garamond', 'Noto Serif TC', 'serif'],
+        serif: ['Noto Serif TC', 'serif'],
+        sans: ['Noto Sans TC', 'sans-serif'],
+      },
+      colors: {
+        ivory: '#F7F3EA',
+        cream: '#FCFAF4',
+        navy: '#1F3A52',
+        steel: '#3D5A73',
+        oxblood: '#8B2E3C',
+        brass: '#B08D4F',
+        gold: '#C9A961',
+        ink: '#22201C',
+        slate: '#6B6456',
+      }
+    }
+  }
+}
+</script>
+<style>
+body {
+  background-color: #F7F3EA;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(139, 46, 60, 0.03) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(31, 58, 82, 0.04) 0%, transparent 45%);
+  color: #22201C;
+  min-height: 100vh;
+}
+.paper {
+  background-color: #FCFAF4;
+  box-shadow: 
+    0 1px 2px rgba(34, 32, 28, 0.04),
+    0 4px 18px rgba(34, 32, 28, 0.07),
+    inset 0 0 0 1px rgba(107, 100, 86, 0.08);
+}
+.gilt {
+  position: relative;
+}
+.gilt::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(176, 141, 79, 0.25);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.btn-navy { background: #1F3A52; color: #FCFAF4; transition: all 0.2s ease; }
+.btn-navy:hover { background: #2A4D6B; transform: translateY(-1px); }
+.btn-oxblood { background: #8B2E3C; color: #FCFAF4; transition: all 0.2s ease; }
+.btn-oxblood:hover { background: #A03847; transform: translateY(-1px); }
+.choice-btn {
+  background: #FCFAF4;
+  border: 1.5px solid rgba(107, 100, 86, 0.25);
+  transition: all 0.2s ease;
+  text-align: left;
+}
+.choice-btn:hover:not(:disabled) { border-color: #1F3A52; background: #F7F3EA; transform: translateX(2px); }
+.choice-btn.correct { background: #E8EDE6; border-color: #2F5E3A; color: #2F5E3A; }
+.choice-btn.wrong { background: #F4E0E2; border-color: #8B2E3C; color: #8B2E3C; }
+.choice-btn:disabled { cursor: not-allowed; }
+.tag { font-size: 0.7rem; padding: 2px 9px; border-radius: 999px; font-weight: 500; letter-spacing: 0.04em; }
+.fade-in { animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.divider-ornament { display: flex; align-items: center; gap: 12px; color: #B08D4F; }
+.divider-ornament::before, .divider-ornament::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, rgba(176, 141, 79, 0.35), transparent); }
+.notes-content { line-height: 1.85; }
+.notes-content strong { color: #8B2E3C; font-weight: 600; }
+.notes-content em { color: #1F3A52; font-style: normal; font-weight: 600; }
+.spectrum-bar { background: linear-gradient(to right, #C7C0B0, #B08D4F, #8B2E3C, #3D5A73, #1F3A52); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo } = React;
+
+// ===== 題庫資料 =====
+const MC = [
+  // ===== 商標法 (35%) =====
+  { id:1, t:"商標", q:"商標識別性光譜由「弱→強」的正確順序為？", c:["獨創性<任意性<暗示性<描述性<通用名稱","通用名稱<描述性<暗示性<任意性<獨創性","描述性<通用名稱<暗示性<獨創性<任意性","通用名稱<暗示性<描述性<任意性<獨創性"], a:1, e:"識別性光譜（從弱到強）：**通用名稱(generic) → 描述性(descriptive) → 暗示性(suggestive) → 任意性(arbitrary) → 獨創性(fanciful)**。\n口訣：「通描暗任獨」。越往右識別性越強、越易註冊、越難被仿冒混淆。其中通用名稱永遠不能註冊，描述性需取得第二意義才行。" },
+  { id:2, t:"商標", q:"「蘋果(Apple)」使用於「電腦產品」，屬於哪一種識別性商標？", c:["描述性商標","通用名稱","任意性商標","暗示性商標"], a:2, e:"**任意性(arbitrary)商標**：商標本身有既有含義（蘋果是一種水果），但與指定的商品（電腦）**完全無關**，沒有傳達電腦的任何資訊。\n對照：若「蘋果」用於「果汁」就變成描述性（說明成分），識別性大降。" },
+  { id:3, t:"商標", q:"下列哪一種商標「需要」取得第二意義（後天識別性）才能註冊？", c:["獨創性商標","任意性商標","暗示性商標","描述性商標"], a:3, e:"**描述性商標**先天不具識別性，必須經商業使用、讓消費者產生連結（第二意義 secondary meaning）才能註冊。例如「明通治痛單」、De Beers「鑽石恆久遠」。\n注意：通用名稱即使有第二意義也不得註冊。" },
+  { id:4, t:"商標", q:"我國商標權的取得採何種主義？", c:["使用保護主義","註冊保護主義","創作保護主義","公告保護主義"], a:1, e:"我國採**註冊保護主義**（商標法第2條）：要取得商標權須申請註冊。\n對照：美國採**使用主義**（use in commerce）。我國的著名商標縱使未註冊仍受一定保護，且註冊後須繼續使用以維持權利。" },
+  { id:5, t:"商標", q:"下列何者「不是」商標法第18條明文列舉的可保護客體？", c:["聲音","氣味","全像圖","動態"], a:1, e:"商標法第18條列舉：**文字、圖形、記號、顏色、立體形狀、動態、全像圖、聲音**等。\n**氣味**未被列舉（雖然條文用「等」字保留彈性，但氣味商標在我國實務上難以註冊，因不易以圖樣明確表示）。" },
+  { id:6, t:"商標", q:"「Netflix」(Net+Flick)使用於影音串流服務，最可能屬於？", c:["描述性","暗示性","通用名稱","任意性"], a:1, e:"**暗示性(suggestive)商標**：以間接、譬喻方式暗示服務內容（Net=網路、Flick=電影），消費者需運用**一定程度的想像、推理**才能連結。\n與描述性的差別：描述性是「直接明顯描述」，暗示性需要「想像力」這道橋。" },
+  { id:7, t:"商標", q:"判斷商標「混淆誤認之虞」，下列何者「不是」審查基準所列的參考因素？", c:["商標近似程度","商品或服務類似之程度","商標申請人的國籍","相關消費者對各商標熟悉之程度"], a:2, e:"**混淆誤認之虞八要素**：①商標近似程度 ②商品/服務類似程度 ③識別性強弱 ④先權利人多角化經營 ⑤實際混淆情事 ⑥消費者熟悉程度 ⑦申請是否善意 ⑧其他因素。\n「申請人國籍」不在其中。" },
+  { id:8, t:"商標", q:"關於「商標淡化」(dilution)，下列敘述何者正確？", c:["任何註冊商標都可主張","僅保護著名商標","必須證明有混淆誤認之虞","與商標識別性無關"], a:1, e:"**商標淡化僅保護「著名商標」**，且**不以混淆誤認為要件**（即使不致混淆，但減損其識別性或信譽即可）。\n分兩種：①減損識別性之虞（沖淡）②減損信譽之虞（玷污）。規定在第30條第1項第11款後段。" },
+  { id:9, t:"商標", q:"「池上米」屬於下列哪一種標章？", c:["團體標章","產地證明標章","商標","團體商標"], a:1, e:"**產地證明標章**：證明商品來自特定地理區域且具特定品質。「池上米」是我國最早的產地證明標章，由台東縣池上鄉公所授權使用，證明米產自池上鄉且品質合格。" },
+  { id:10, t:"商標", q:"證明標章的申請人有何重要限制？（商標法第81、82條）", c:["必須是政府機關","申請人本身不得從事所證明之商品或服務業務","必須是上市公司","沒有任何限制"], a:1, e:"**申請人本身不得從事其所證明的商品/服務業務**——避免「球員兼裁判」的疑慮，確保證明的公正性。申請人須是有證明能力的法人、團體或政府機關。" },
+  { id:11, t:"商標", q:"「團體標章」與「團體商標」最主要的差異是？", c:["團體標章指示商品來源；團體商標表彰會籍","團體標章表彰會員會籍；團體商標指示會員的商品或服務來源","兩者完全相同","團體商標不能註冊"], a:1, e:"**團體標章**：表彰「會員身分/會籍」（如獅子會徽章），不涉及商業來源。\n**團體商標**：指示「會員所提供的商品或服務來源」（商業行為），由團體成員共同使用。" },
+  { id:12, t:"商標", q:"商標權的效力範圍採何種主義？", c:["世界主義","屬人主義","屬地主義","折衷主義"], a:2, e:"**屬地主義**：商標權於各註冊國分別有效、效力各自獨立。在台灣註冊不當然在美國受保護。\n馬德里系統（我國未加入）提供單一管道向多國申請的便利，但各國效力仍依其國內法。" },
+  { id:13, t:"商標", q:"「描述性商標」與「暗示性商標」的關鍵區別在於？", c:["消費者是否需要運用想像力才能連結商品特性","是否為文字商標","是否為著名商標","是否已經註冊"], a:0, e:"**關鍵在「想像力」這道橋**：\n• 描述性 → 直接、明顯描述商品特性（如「燒烤」用於餐廳），不需想像\n• 暗示性 → 間接、譬喻，消費者需想像、推理才能領會關聯" },
+  { id:14, t:"商標", q:"關於「先申請先註冊主義」，下列敘述何者正確？（商標法第22條）", c:["先使用者一定取得商標權","兩人同日以相同近似商標申請而無法辨別先後時，由各申請人協議，不成則抽籤","後申請者優先","完全不需要註冊"], a:1, e:"**先申請先註冊主義**：相同/近似商標用於相同/類似商品時，核准最先申請者。\n同日申請無法辨別先後 → 申請人**協議**，協議不成 → **抽籤**決定（第22條）。" },
+  { id:15, t:"商標", q:"「聲明不專用」制度的目的為何？", c:["放棄整個商標","商標包含不具識別性的部分時，聲明該部分不主張專用權，使整體商標得以註冊","延長保護期間","撤銷他人商標"], a:1, e:"**聲明不專用**：當商標含有不具識別性的部分（如說明文字），申請人聲明對「該部分」不主張專用權，讓整體商標仍可註冊。\n注意：若整體都不具識別性，無法靠聲明不專用來救。" },
+  { id:16, t:"商標", q:"Christian Louboutin 的紅色鞋底主張商標保護，運用的核心法律概念是？", c:["獨創性","顏色商標透過大量使用取得第二意義（後天識別性）","通用名稱","功能性"], a:1, e:"**顏色商標 + 第二意義**：紅色本身不具先天識別性，但 Louboutin 透過二十多年的大量廣告、媒體報導、銷售成績，使紅底鞋「在時尚圈中明確指向其品牌」，因而取得後天識別性，獲商標保護。" },
+  { id:17, t:"商標", q:"我國商標權的保護期間為？", c:["永久有效","自註冊公告日起10年，期滿得申請延展","20年且不得延展","著作人死後50年"], a:1, e:"**商標權自註冊公告日起10年**，期滿可**不斷申請延展**（每次10年），是少數可「永續」的智慧財產權（只要持續使用+延展）。對照：專利和著作權都有確定的到期日。" },
+  { id:18, t:"商標", q:"商標法第36條的「合理使用」中，下列何者屬於「描述性合理使用」？", c:["以符合商業交易習慣的誠信方法，表示自己商品的名稱、品質、產地等","抄襲他人著名商標","在相同商品使用相同註冊商標","惡意攀附他人商譽"], a:0, e:"**描述性合理使用**：以善意、符合商業習慣的方式，使用文字來「描述自己商品」的品質、用途、產地等，即使該文字與他人商標相同，也不受商標權拘束（如賣池上產的米標示「池上」產地）。" },
+  { id:19, t:"商標", q:"下列關於「著名商標」未註冊時的保護，何者正確？", c:["未註冊的著名商標完全沒有保護","著名商標縱使未註冊，權利人仍可排除他人不當使用","著名商標只能在註冊國保護","著名商標不受混淆誤認規範"], a:1, e:"**著名商標即使未註冊，仍受保護**：權利人可排除他人不當使用（商標法第30條等規定，及公平交易法補充）。這是註冊保護主義的重要例外。" },
+  { id:20, t:"商標", q:"商標近似採「異時異地、隔離觀察」原則，其理由是？", c:["因為法官沒時間仔細比對","因為一般消費者是憑模糊印象在不同時間地點重複選購，而非並列比對","因為所有商標都很相似","因為法律強制要求隔很遠看"], a:1, e:"**隔離觀察原則**：真實購物情境中，消費者是憑「模糊的大體印象」在不同時間地點重複選購，**不會把兩個商標並列細看**。所以判斷近似時，細微差異難以發揮區辨功能，應設想實際購買態樣。" },
+  { id:21, t:"商標", q:"商標的核心功能是什麼？", c:["美化商品","表彰、辨識商品或服務的來源","必須是公司名稱","只能用於廣告"], a:1, e:"**商標最核心的功能是「表彰來源」(origin identifier)**：讓消費者辨識商品/服務來自哪裡，並擔保其品質（quality and accountability）。其次才有廣告等衍生功能。" },
+
+  // ===== 著作權法 (35%) =====
+  { id:22, t:"著作", q:"著作權的保護要件「原創性」，其門檻為何？", c:["必須像專利一樣具備新穎性","門檻很低，只需獨立創作（非抄襲）且具最低程度的創意","必須是世界首創","必須登記才能取得"], a:1, e:"**原創性門檻很低**：只要是著作人「**獨立創作**」（非抄襲），且有「**最低程度的創意**」即可。\n不像專利要求新穎性（世界首創）——你的作品就算與他人雷同，只要是各自獨立完成，都受保護。" },
+  { id:23, t:"著作", q:"著作權法第10條之1的「思想與表達二分法」，保護的是？", c:["思想本身","表達，而非其所表達的思想、程序、概念、原理、發現","抽象概念","操作方法"], a:1, e:"**思想表達二分法**（第10條之1）：著作權**只保護「表達」，不保護「思想」**（含程序、製程、系統、操作方法、概念、原理、發現）。\n例：食譜的「文字寫法」受保護，但「烹飪步驟概念」人人可用。" },
+  { id:24, t:"著作", q:"下列何者「不」屬於著作人格權？", c:["公開發表權","姓名表示權","重製權","禁止不當修改權（同一性保持權）"], a:2, e:"**著作人格權有三**：①公開發表權 ②姓名表示權 ③禁止不當修改權。\n**重製權屬於「著作財產權」**，不是人格權。記法：人格權關乎「名譽尊嚴」，財產權關乎「金錢利用」。" },
+  { id:25, t:"著作", q:"關於著作人格權的敘述，下列何者正確？", c:["可以全部讓與他人","專屬於著作人本身，不得讓與或繼承","可以自由繼承","著作人一死亡即消滅"], a:1, e:"**著作人格權專屬著作人本身，不得讓與或繼承**（第21條）。即使著作人死亡，其人格權的保護「視同生存」，任何人不得侵害。\n對照：著作財產權可以全部或部分讓與、繼承。" },
+  { id:26, t:"著作", q:"我國著作財產權的保護期間原則為？", c:["著作完成後50年","著作人生存期間及其死亡後50年","永久保護","著作人死後70年"], a:1, e:"**原則：著作人生存期間 + 死亡後50年**（第30條）。\n注意我國是死後**50年**（不是美國的70年）。期間屆滿後著作進入公共領域，人人可自由利用。" },
+  { id:27, t:"著作", q:"下列何者「不」屬於著作財產權？", c:["重製權","改作權","公開傳輸權","姓名表示權"], a:3, e:"**姓名表示權是著作人格權**，不是財產權。\n著作財產權包括：重製、公開口述、公開播送、公開上映、公開演出、公開傳輸、公開展示、改作、編輯、散布、輸入等「利用」相關的權利。" },
+  { id:28, t:"著作", q:"判斷「合理使用」的四項基準（著作權法第65條），下列何者「不是」其中之一？", c:["利用之目的及性質（商業或非營利教育）","著作之性質","著作人的知名度","利用結果對著作潛在市場與現在價值之影響"], a:2, e:"**合理使用四基準**：①利用之**目的及性質**（商業/非營利教育、是否轉化）②**著作之性質** ③所利用之**質量及比例** ④對**潛在市場與價值之影響**。\n「著作人知名度」不是基準。" },
+  { id:29, t:"著作", q:"合理使用四基準中，「所利用之質量及其在整個著作所占之比例」是指？", c:["利用的商業目的","利用的份量與比重（質與量、占原著作的比例）","對市場的影響","著作的性質"], a:1, e:"**第三基準：質 + 量**。利用越多、或利用到原著作的「核心精華」（質的重要性），越不利於合理使用認定。即使只引用少量，但若是最關鍵的部分，仍可能不構成合理使用。" },
+  { id:30, t:"著作", q:"「製版權」保護的是什麼？", c:["有原創性的新創作","無著作財產權（或已消滅）的文字著述或美術著作，經製版人整理印刷後的首次重製權","商標標識","發明技術"], a:1, e:"**製版權**：保護「無著作財產權或財產權已消滅」的古老文字/美術著作，經製版人花心力整理印刷後的**首次重製排版**。保護期間**10年**。目的是鼓勵整理出版古籍。" },
+  { id:31, t:"著作", q:"出資聘請他人完成著作，若雙方未約定，著作財產權歸屬？（著作權法第12條）", c:["一律歸出資人","原則上以受聘人為著作人，但出資人得在出資目的範圍內利用該著作","一律歸國家","無人享有"], a:1, e:"**出資聘人（第12條）**：未約定時，**以受聘人（實際創作者）為著作人**，享有著作權；但**出資人得利用**該著作。\n對照職務著作（第11條，受雇關係）：未約定時著作人是受雇人，但財產權歸雇用人。" },
+  { id:32, t:"著作", q:"著作權與專利權對「原創性／新穎性」的要求差異為何？", c:["著作權要求比專利高","著作權的原創性門檻遠低於專利的新穎性，只需獨立創作且有最低創意","兩者完全相同","著作權完全不要求原創性"], a:1, e:"**著作權原創性 << 專利新穎性**：\n• 著作權：只要獨立創作、非抄襲、有微量創意即可\n• 專利：須是「世界首創」（新穎性）+ 進步性\n所以兩人各自畫出相似的畫都受著作權保護，但專利同樣技術只給最先申請者。" },
+  { id:33, t:"著作", q:"下列何者「不」受著作權保護？（著作權法第9條）", c:["小說","憲法、法律、命令或公文","繪畫","音樂"], a:1, e:"**第9條排除**：①憲法、法律、命令、公文 ②單純為傳達事實的新聞報導 ③標語及通用符號 ④單純數表表格 ⑤依法令舉行的考試試題等。\n這些基於公益或不具原創性而不受保護。" },
+  { id:34, t:"著作", q:"著作權保護「表達」而非「思想」，下列何者屬於受保護的「表達」？", c:["數學公式","小說的劇情、故事架構、角色特質與外型","科學原理","操作方法"], a:1, e:"**可受保護的「表達」**包括文字，以及非文字部分如：小說/戲劇的**劇情、故事架構、事件時序、角色特質與外型**，甚至視聽著作的「整體觀感」(total concept and feel)。\n數學公式、科學原理、操作方法屬「思想」，不受保護。" },
+  { id:35, t:"著作", q:"關於著作人格權可否讓與，我國法的立場較接近？", c:["一元論，人格權可讓與","二元論，著作人格權專屬著作人不得讓與或繼承","人格權可自由繼承","財產權不可讓與"], a:1, e:"**我國採近「二元論」**：著作財產權與人格權分立。\n• 人格權 → 專屬著作人，不得讓與/繼承\n• 財產權 → 可全部或部分讓與、繼承\n（一元論則視兩者為一體不可分）" },
+  { id:36, t:"著作", q:"著作財產權的「散布權」與「第一次銷售原則（權利耗盡）」，下列敘述何者正確？", c:["著作財產權人可永遠控制每一份重製物的轉售","合法重製物經第一次銷售後，該特定重製物的後續轉售不再受散布權控制","散布權根本不存在","散布權永久有效"], a:1, e:"**第一次銷售原則 / 權利耗盡**：你買的正版書，第一次合法銷售後，著作權人對「那一本」的散布權就「耗盡」了——你可以自由轉賣、贈送。否則二手書店都違法了。" },
+  { id:37, t:"著作", q:"「公開發表權」屬於著作人格權，下列何種情況「推定」著作人同意公開發表？", c:["著作人將尚未發表著作的財產權讓與他人，因財產權行使而公開發表","他人擅自盜版上傳","著作人明確表示反對","任何情況都推定同意"], a:0, e:"**第15條推定同意公開發表**的情形：①著作人讓與/授權尚未發表著作的財產權，因其行使而公開發表 ②讓與美術或攝影著作原件，受讓人公開展示。屬於人格權與財產權衝突時的調和。" },
+  { id:38, t:"著作", q:"一張攝影作品的「原創性」如何展現？", c:["必須具備如專利的高度新穎性","攝影者對拍攝主題、對象、角度、光線等的選擇與安排","只要按下快門就絕對沒有原創性","攝影一律不受保護"], a:1, e:"**攝影著作的原創性**展現在攝影者的「**選擇與安排**」：拍攝主題、對象、構圖角度、光線、時機等創作判斷。實務認為這展現了著作人的個性與精神作用，故受保護（門檻很低）。" },
+  { id:39, t:"著作", q:"著作權法上的「改作」是指？", c:["單純重製（原樣複製）","以翻譯、編曲、改寫、拍攝影片或其他方法，就原著作另為創作","公開展示原件","散布重製物"], a:1, e:"**改作（第3條）**：就原著作「另為創作」——翻譯、編曲、改寫、拍成電影、改編漫畫等。改作須經原著作財產權人同意（改作權），改作完成的「衍生著作」本身也獨立受保護。" },
+  { id:40, t:"著作", q:"下列關於著作權「取得方式」的敘述，何者正確？", c:["必須向主管機關登記才取得","著作完成即自動取得（創作保護主義），不需登記或審查","必須申請實體審查","必須繳納年費維持"], a:1, e:"**創作保護主義**：著作一經「完成」即自動享有著作權，**不需登記、註冊或審查**。\n對照：商標、專利都採「註冊/申請主義」，必須經過申請程序。" },
+  { id:41, t:"著作", q:"合理使用判斷中的「轉化性使用」(transformative use)，主要影響哪一項基準？", c:["利用之目的及性質","著作之性質","保護期間","著作人國籍"], a:0, e:"**轉化性使用影響第一基準（利用之目的及性質）**：若利用賦予原著作新的意義、訊息或目的（如評論、諧仿、二次創作），而非單純取代原著作，則較有利於合理使用認定。" },
+  { id:42, t:"著作", q:"「編輯著作」（如資料庫、選集）受著作權保護的理由是？", c:["對資料的「選擇與編排」具有原創性","資料本身有經濟價值","編輯花了很多錢","編輯者很有名"], a:0, e:"**編輯著作**：就資料的「**選擇與編排**」展現原創性而受保護（保護的是編排巧思，不是個別資料）。即使所收錄資料本身不受保護（如電話號碼），其獨特的選編方式仍可受保護。" },
+
+  // ===== 專利法 (10%) =====
+  { id:43, t:"專利", q:"我國專利法將專利分為哪三種？", c:["發明、新型、設計","實用、外觀、植物","商標、著作、發明","物品、方法、用途"], a:0, e:"我國三種專利：**發明專利、新型專利、設計專利**。\n對照：美國分 utility（實用）、design（設計）、plant（植物）三種；巴黎公約則為 patent 與 utility model。" },
+  { id:44, t:"專利", q:"三種專利的保護期間，下列何者正確？", c:["發明20年、新型10年、設計15年","全部都是20年","發明10年、新型20年、設計5年","全部永久"], a:0, e:"**保護期間**（自申請日起算）：\n• 發明專利 → **20年**\n• 新型專利 → **10年**\n• 設計專利 → **15年**\n記法：發明最高階、保護最久。" },
+  { id:45, t:"專利", q:"「永動機」無法取得專利的主要原因是？", c:["設計太複雜","違反自然法則（能量/質量守恆），不具產業利用性","沒有人申請","結構太簡單"], a:1, e:"**永動機違反自然法則**（能量守恆/質量守恆定律），實際上無法製造運作，因此**不具產業利用性（enablement）**，不屬於可專利的「發明」。" },
+  { id:46, t:"專利", q:"下列何者「不」屬於專利法保護的「發明」？", c:["改良的化學物質","數學公式、遊戲規則（非利用自然法則）","產品的製造方法","半導體裝置"], a:1, e:"**發明須「利用自然法則之技術思想」**。\n非發明類型：①自然法則本身 ②單純發現 ③違反自然法則（永動機）④**非利用自然法則者：數學公式、遊戲規則、商業方法、心智步驟** ⑤單純技術思想/資訊揭示。" },
+  { id:47, t:"專利", q:"新型專利與發明專利在「審查標準」上的主要差異是？", c:["新型採實體審查、發明採形式審查","新型採形式審查（較寬鬆）、發明採實體審查（較嚴格）","兩者審查完全相同","新型不需審查"], a:1, e:"**審查差異**：\n• 發明專利 → **實體審查**（嚴格審查新穎性、進步性等）\n• 新型專利 → **形式審查**（較寬鬆，只查格式形式）\n所以新型較快取得，但權利較不穩定。新型限「物品的形狀、構造或組合」。" },
+  { id:48, t:"專利", q:"設計專利保護的重點是？", c:["技術思想的功能改良","物品外觀的視覺訴求（形狀、花紋、色彩），具「物品性」與「視覺性」","產品的製造方法","抽象的自然法則"], a:1, e:"**設計專利**重視「**物品外觀的視覺設計**」：\n• 物品性 → 須應用於物品外觀、供產業利用\n• 視覺性 → 對視覺的具體設計，不須功能改良\n與發明/新型（重技術功能）不同。電腦圖像(icon)與GUI也可申請。" },
+
+  // ===== 營業秘密法 (10%) =====
+  { id:49, t:"營業秘密", q:"營業秘密的三大要件為？（營業秘密法第2條）", c:["新穎性、進步性、產業利用性","秘密性（非周知）、經濟價值、合理保密措施","識別性、第二意義、註冊","原創性、固定、發表"], a:1, e:"**營業秘密三要件**：\n①**秘密性**——非一般涉及該類資訊之人所知\n②**經濟價值**——因秘密性而有實際或潛在經濟價值\n③**合理保密措施**——所有人已採取合理保密。\n三者缺一不可。經典例子：可口可樂配方。" },
+  { id:50, t:"營業秘密", q:"我國對營業秘密「秘密性」的判斷採何種標準？", c:["公眾標準（一般民眾）","業界標準（非一般涉及該類資訊之人所知）","全球公開標準","政府認定標準"], a:1, e:"我國採**業界標準**（同 TRIPS 第39(2)條）：只要「非一般涉及該類資訊之**業界人士**所知」即具秘密性。\n對照：日本、美國採**公眾標準**（一般民眾是否知悉）。" },
+  { id:51, t:"營業秘密", q:"以「還原工程」(reverse engineering)取得他人營業秘密，原則上？", c:["屬於不正當方法","原則上屬於正當方法","一律違法","必須事先申請許可"], a:1, e:"**還原工程原則上是正當方法**：合法取得產品後，自行拆解分析而得知其秘密，並不違法。這也是營業秘密保護的內在限制——你保護不了「別人能合法逆向破解的東西」。" },
+  { id:52, t:"營業秘密", q:"下列何者「不」屬於營業秘密法第10條的「不正當方法」？", c:["竊盜","賄賂","還原工程","違反保密義務"], a:2, e:"第10條「不正當方法」例示：**竊盜、詐欺、脅迫、賄賂、擅自重製、違反保密義務、引誘他人違反保密義務**或其他類似方法。\n**還原工程不在內**（原則上正當）。" },
+  { id:53, t:"營業秘密", q:"客戶名單若僅有名稱、地址、聯絡方式，且可於市場輕易查得，是否構成營業秘密？", c:["一定構成","通常難認有秘密性及經濟價值，不構成","永遠構成","與名單內容無關"], a:1, e:"依智財法院107年度民營訴字第2號：**僅有名稱、地址、聯絡方式且可輕易查得的客戶名單，難認有秘密性及經濟價值**。\n但若包含客戶喜好、特殊需求、決策名單等「經整理分析」的資訊，則可能構成。" },
+  { id:54, t:"營業秘密", q:"營業秘密遭侵害的「損害賠償請求權」時效為？（第12條）", c:["自知悉時起2年、自行為時起10年","永久可請求","自知悉時起1年","自知悉時起50年"], a:0, e:"**損害賠償時效（第12條）**：自請求權人「知有行為及賠償義務人時起**2年**」不行使而消滅；自「行為時起逾**10年**」者亦同。（短期2年 + 長期10年雙重時效）" },
+
+  // ===== 綜合 (10%) =====
+  { id:55, t:"綜合", q:"下列關於各智慧財產權「保護期間」的比較，何者正確？", c:["商標永久不需任何動作、營業秘密20年、著作權死後70年","商標自註冊公告起10年得延展、發明專利20年、著作權著作人死後50年、營業秘密至公開為止","全部都是20年","全部都永久"], a:1, e:"**保護期間總整理**：\n• 商標 → 10年（**可不斷延展**）\n• 發明專利20年 / 新型10年 / 設計15年（**到期消滅**）\n• 著作權 → 著作人**死後50年**\n• 營業秘密 → **至秘密公開為止**（無固定期間）" },
+  { id:56, t:"綜合", q:"同一個產品的「外觀設計」，可能同時受哪些智慧財產權保護？", c:["設計專利、著作權（美術著作）、甚至立體商標","只能受專利保護","只能受商標保護","完全不能受任何保護"], a:0, e:"**一物可多權併存**：產品外觀可能同時是\n• 設計專利（視覺設計）\n• 著作權（若具原創性的美術著作）\n• 立體商標（若取得識別性/第二意義）\n三者保護重點不同，可疊加。例如精品包的造型。" },
+  { id:57, t:"綜合", q:"「約定」競業禁止受勞動基準法第9條之1限制，下列何者「不是」其四要件之一？", c:["雇主有應受保護的正當營業利益","勞工的職位或職務能接觸或使用雇主的營業秘密","勞工必須是公司高階主管","雇主對勞工不從事競業的損失有合理補償"], a:2, e:"**勞基法第9條之1四要件**：①雇主有正當營業利益 ②勞工**能接觸/使用營業秘密** ③期間、區域、職業範圍、對象未逾合理 ④雇主有**合理補償**。\n與「職位高低」無關。違反任一要件，約定無效。" },
+  { id:58, t:"綜合", q:"離職後競業禁止的期間，依勞基法最長不得逾多久？", c:["1年","2年（逾2年者縮短為2年）","5年","無限制"], a:1, e:"**離職後競業禁止最長2年**（勞基法第9條之1第4項）：逾2年者，縮短為2年。\n注意：合理補償**不包括**勞工在職期間所領的薪資。" },
+  { id:59, t:"綜合", q:"下列關於四種智慧財產權「保護客體」的配對，何者「錯誤」？", c:["專利—發明、新型、設計","商標—具識別性的標識","著作權—具原創性的著作","營業秘密—必須註冊才受保護的資訊"], a:3, e:"**營業秘密「不需註冊」**——它的核心正是「保持秘密」，註冊反而會公開。這與商標、專利的「註冊/申請主義」相反。\n其他三個配對都正確。" },
+  { id:60, t:"綜合", q:"智慧財產權的三大保護原理，下列配對何者正確？", c:["洛克勞動理論→天賦權利(Natural Rights)；黑格爾→人格理論(Personhood)；功利主義→經濟誘因(Utilitarian)","洛克→經濟誘因","黑格爾→天賦權利","功利主義→人格延伸"], a:0, e:"**三大保護原理**：\n①**洛克（Locke）勞動理論** → 天賦權利：付出勞動就該擁有成果\n②**黑格爾（Hegel）人格理論** → 財產是人格的延伸\n③**功利主義/經濟誘因** → 用排他權提供誘因促進創新（美國憲法 Art. I §8）" }
+];
+
+const TOPICS = ["全部","商標","著作","專利","營業秘密","綜合"];
+const TOPIC_FULL = {"商標":"商標法 35%","著作":"著作權法 35%","專利":"專利法 10%","營業秘密":"營業秘密法 10%","綜合":"綜合 10%"};
+const TOPIC_COLOR = {"商標":"oxblood","著作":"navy","專利":"brass","營業秘密":"steel","綜合":"gold"};
+
+// ===== 重點整理 =====
+const NOTES = [
+  { id:"商標", title:"商標法重點整理", weight:"35%", body:`
+## 一、商標的本質與功能
+**核心功能：表彰來源**（origin identifier）——讓消費者辨識商品/服務來自誰、擔保品質。
+商標是無體財產權，具排他性，權利人可禁止侵害、請求損害賠償及銷毀。
+
+## 二、識別性光譜（最重要！）
+識別性由弱到強：
+
+| 類型 | 說明 | 例子 | 註冊 |
+|---|---|---|---|
+| 通用名稱 generic | 商品的通用稱呼 | 「電腦」賣電腦 | **永不可** |
+| 描述性 descriptive | 直接描述特性 | 「燒烤」開餐廳 | 需第二意義 |
+| 暗示性 suggestive | 譬喻、需想像 | Netflix、Microsoft | **可** |
+| 任意性 arbitrary | 既有詞但與商品無關 | Apple賣電腦 | **可** |
+| 獨創性 fanciful | 憑空創造 | Acer、Sony | **可（最強）** |
+
+**第二意義（後天識別性）**：描述性標識經商業使用，使消費者產生連結後，可取得識別性（如「明通治痛單」、De Beers）。
+
+## 三、可保護的商標客體（第18條）
+**文字、圖形、記號、顏色、立體形狀、動態、全像圖、聲音**等（氣味未明文列舉）。
+
+## 四、三大基本原則
+- **註冊保護主義**：要註冊才有商標權（我國）；美國採使用主義
+- **屬地主義**：各國效力獨立
+- **先申請先註冊主義**：同日無法辨別先後 → 協議 → 抽籤（第22條）
+
+## 五、標章類型
+| 類型 | 功能 |
+|---|---|
+| 商標 | 指示單一來源，權利人自用 |
+| 證明標章 | 證明品質/產地（申請人不得自營該業務）|
+| 團體標章 | 表彰會員「會籍」（非商業）|
+| 團體商標 | 指示會員的商品/服務來源 |
+
+產地證明標章（如池上米）vs 產地團體商標：前者開放使用、申請人不能自用；後者僅供會員使用。
+
+## 六、混淆誤認之虞八要素
+①商標近似程度 ②商品/服務類似程度 ③識別性強弱 ④先權利人多角化 ⑤實際混淆情事 ⑥消費者熟悉程度 ⑦申請是否善意 ⑧其他因素。
+近似判斷原則：**整體觀察 + 異時異地隔離觀察**。
+
+## 七、著名商標與商標淡化
+- 著名商標**未註冊也受保護**
+- **商標淡化（dilution）**：僅保護著名商標、**不以混淆誤認為要件**
+  - 減損識別性之虞（沖淡）
+  - 減損信譽之虞（玷污）
+  - 規定：第30條第1項第11款後段
+
+## 八、合理使用（第36條）
+- **描述性合理使用**：善意描述自己商品的品質/產地等
+- **指示性合理使用**：用他人商標指示該他人的商品（如維修服務標明品牌）
+
+## 九、保護期間
+**自註冊公告日起10年，可不斷延展**（少數可「永續」的IP）。
+` },
+  { id:"著作", title:"著作權法重點整理", weight:"35%", body:`
+## 一、保護要件：原創性
+**門檻很低**：只需①**獨立創作**（非抄襲）②**最低程度的創意**。
+與專利新穎性（世界首創）天差地別——兩人各自畫相似的畫都受保護。
+
+## 二、思想與表達二分法（第10條之1）
+> 著作權只保護**「表達」**，不保護**「思想」**（含程序、製程、系統、操作方法、概念、原理、發現）。
+
+- 受保護的「表達」：文字、劇情、故事架構、角色特質與外型、整體觀感(look and feel)
+- 不受保護的「思想」：數學公式、科學原理、操作方法、抽象概念
+
+## 三、著作人格權 vs 著作財產權（核心區分！）
+
+| | 著作人格權 | 著作財產權 |
+|---|---|---|
+| 內容 | 公開發表權、姓名表示權、禁止不當修改權 | 重製、公開播送、公開傳輸、改作、編輯、散布… |
+| 性質 | 關乎名譽尊嚴 | 關乎金錢利用 |
+| 讓與 | **不得讓與或繼承**（專屬本人）| 可全部/部分讓與、繼承 |
+| 死後 | 視同生存，仍受保護 | 死後50年消滅 |
+
+我國採近**二元論**（人格權與財產權分立）。
+
+## 四、著作財產權清單
+重製權、公開口述權、公開播送權、公開上映權、公開演出權、公開傳輸權、公開展示權、**改作權**、編輯權、散布權、輸入權。
+- **改作**：翻譯、編曲、改寫、拍片等「另為創作」，衍生著作獨立受保護
+- **散布權 + 第一次銷售原則**：正版品第一次售出後可自由轉賣（權利耗盡）
+
+## 五、合理使用四基準（第65條，最重要！）
+1. **利用之目的及性質**（商業/非營利教育、是否**轉化性使用**）
+2. **著作之性質**
+3. **所利用之質量及比例**（質與量）
+4. **對潛在市場與現在價值之影響**（最關鍵）
+
+## 六、保護期間
+**著作人生存期間 + 死後50年**（第30條）。注意是50年不是70年。
+
+## 七、權利歸屬
+| 情形 | 著作人 | 財產權 |
+|---|---|---|
+| 職務著作（第11條，受雇）| 受雇人 | 原則歸雇用人 |
+| 出資聘人（第12條）| 原則受聘人 | 受聘人享有、出資人得利用 |
+
+## 八、不受保護的標的（第9條）
+憲法、法律、命令、公文；單純傳達事實的新聞報導；標語通用符號；單純數表；考試試題等。
+
+## 九、取得方式
+**創作保護主義**：完成即自動取得，不需登記/審查（與商標、專利相反）。
+
+## 十、製版權
+保護「無著作權或已消滅」的古老文字/美術著作經整理印刷的首次重製，保護期**10年**。
+` },
+  { id:"專利", title:"專利法重點整理", weight:"10%", body:`
+## 一、三種專利（核心！）
+
+| | 發明專利 | 新型專利 | 設計專利 |
+|---|---|---|---|
+| 標的 | 利用自然法則之技術思想創作 | 物品的形狀、構造或組合 | 物品外觀的視覺設計 |
+| 審查 | **實體審查**（嚴格）| **形式審查**（寬鬆）| 實體審查 |
+| 期間 | **20年** | **10年** | **15年** |
+| 重點 | 技術功能 | 實體物品的技術 | 視覺外觀 |
+
+## 二、「發明」的定義
+須具備**「技術性」**：利用自然法則之技術思想，為達特定目的的具體手段。
+
+## 三、非屬於「發明」的類型（常考！）
+- **自然法則本身**（萬有引力、慣性定律）
+- **單純發現**（發現自然界既有物質/現象）
+- **違反自然法則**（永動機 → 違反能量守恆，不具產業利用性）
+- **非利用自然法則**：數學公式、遊戲規則、心智步驟、會計制度、運動規則
+- **單純技術思想**：構想、單純資訊揭示、單純美術創作（知易行難）
+
+## 四、物之發明 vs 方法發明
+- **物之發明**：表現於物（物質如化合物、物品如螺絲）
+- **方法發明**：表現於方法（製造方法、檢測方法、商業方法）
+- 物之發明範圍 > 方法發明（若物品有多種製法，僅註冊的方法受保護）
+- 一個發明專利可同時包含物與方法
+
+## 五、新型專利的限制
+僅限**實體物品**（不保護氣態/液態/粉末等不具特定型態的物質）。
+類型：形狀、構造、組合。
+
+## 六、設計專利的兩大特性
+- **物品性**：須應用於物品外觀、供產業利用（c.f. 純藝術歸著作權）
+- **視覺性**：對視覺的具體設計，不須功能改良、不須解決技術問題
+- 電腦圖像(icon)與圖形化使用者介面(GUI)也可申請
+
+## 七、衍生專利
+- 再發明/再新型：利用他人專利的主要技術 → 須獲原專利權人授權
+- 衍生設計：原物品外觀局部改變、整體近似原設計（第127條）
+
+## 八、制度起源
+威尼斯 1474 年法案（最早的成文專利法）；patent 源自拉丁文 patere（公開）。
+` },
+  { id:"營業秘密", title:"營業秘密法重點整理", weight:"10%", body:`
+## 一、三大要件（第2條，核心！）
+1. **秘密性**——非一般涉及該類資訊之人所知（非周知）
+2. **經濟價值**——因其秘密性而有實際或潛在經濟價值
+3. **合理保密措施**——所有人已採取合理保密措施
+
+> 三者缺一不可。經典例子：可口可樂配方。
+
+## 二、秘密性的判斷標準
+| 標準 | 採用國 | 內涵 |
+|---|---|---|
+| **業界標準** | **我國**、TRIPS 39(2) | 業界人士是否知悉 |
+| 公眾標準 | 日本、美國 | 一般民眾是否知悉 |
+
+註：公眾資訊的「組合」也可能成為營業秘密。
+
+## 三、經濟價值
+- 實際價值：目前可實現的經濟利益
+- 潛在價值：未來可獲得的利益（市佔率、研發能力、競爭優勢）
+
+## 四、合理保密措施（need-to-know 原則）
+與知悉人數無關，視營業秘密種類、經營情形、業界一般預防措施。
+例：標示「機密」、區域門禁管制、員工分級授權、文件密等、檔案加密、離職規定。
+（台積電：一年管8千條機密、列印用金屬紙、員工電郵全掃描）
+
+## 五、營業秘密之侵害（第10條）
+五種侵害態樣 + 「不正當方法」例示：
+**竊盜、詐欺、脅迫、賄賂、擅自重製、違反保密義務、引誘他人違反保密義務**或其他類似方法。
+- **還原工程（reverse engineering）原則上屬正當方法**
+
+## 六、救濟
+| 類型 | 條文 | 內容 |
+|---|---|---|
+| 不作為請求權 | 第11條 | 排除侵害、防止侵害、銷燬 |
+| 損害賠償 | 第12條 | 故意過失負責；時效**2年/10年** |
+| 刑事責任 | 第13之1 | 5年以下徒刑、罰金100萬~1千萬 |
+| 域外加重 | 第13之2 | 意圖境外使用：1~10年、300萬~5千萬 |
+
+## 七、競業禁止
+**法定**：民法562、563（經理人/代辦商）；公司法32、34（經理人）。
+**約定**——勞基法第9條之1四要件：
+1. 雇主有正當營業利益
+2. 勞工能接觸/使用營業秘密
+3. 期間、區域、範圍、對象未逾合理
+4. 雇主有合理補償（不含在職薪資）
+- 違反任一要件 → 約定無效
+- **離職後競業禁止最長2年**（逾2年縮短為2年）
+
+## 八、營業秘密 vs 競業禁止
+| | 營業秘密 | 競業禁止 |
+|---|---|---|
+| 法源 | 營業秘密法、契約 | 公司法、民法、勞基法、契約 |
+| 期間 | 無限制（至公開）| 離職後最長2年 |
+| 違反效果 | 損害賠償、刑責 | 契約責任 |
+` },
+  { id:"綜合", title:"綜合比較重點整理", weight:"10%", body:`
+## 一、四大智慧財產權總比較（必背！）
+
+| | 營業秘密 | 專利 | 著作權 | 商標 |
+|---|---|---|---|---|
+| **保護客體** | 秘密資訊 | 發明/新型/設計 | 具原創性的著作 | 具識別性的標識 |
+| **取得方式** | 保密即可 | 申請+審查 | **完成即自動取得** | 申請註冊 |
+| **保護期間** | 至公開為止 | 20/10/15年 | 死後50年 | 10年（可延展）|
+| **核心要件** | 秘密性 | 新穎性、進步性 | 原創性 | 識別性 |
+| **是否註冊** | 否 | 是 | **否** | 是 |
+
+## 二、三大保護原理
+1. **洛克勞動理論（Locke）** → 天賦權利(Natural Rights)：付出勞動就該擁有成果
+2. **黑格爾人格理論（Hegel）** → 財產是人格的延伸(Personhood)
+3. **功利主義/經濟誘因（Utilitarian）** → 用排他權提供誘因（美國憲法 Art. I §8 cl.8）
+
+## 三、一物可多權併存
+同一產品外觀可能同時受：
+- **設計專利**（視覺設計）
+- **著作權**（具原創性的美術著作）
+- **立體商標**（取得識別性後）
+
+例：精品包造型、可口可樂曲線瓶。
+
+## 四、各IP的「原創性/新穎性」要求高低
+- 專利新穎性（世界首創）**最高**
+- 著作權原創性（獨立創作+微量創意）**最低**
+- 兩人各自獨立創作相似作品 → 著作權都保護；專利只給最先申請者
+
+## 五、立法目的關鍵字對照
+| IP | 立法目的核心 |
+|---|---|
+| 營業秘密 | 維護產業倫理與競爭秩序 |
+| 專利 | 鼓勵發明、促進產業發展 |
+| 著作權 | 保障著作人、促進國家文化發展 |
+| 商標 | 保障商標權與消費者、維護公平競爭 |
+
+## 六、救濟手段共通點
+四種IP受侵害時，大多可主張：①排除/防止侵害（不作為請求）②損害賠償。
+專利、商標、營業秘密另有**刑事責任**；著作權亦有刑責。
+
+## 七、考前提醒
+- 商標、著作各佔 35% → 重中之重，識別性光譜、混淆八要素、合理使用四基準、思想表達二分法務必熟記
+- 專利、營業秘密各 10% → 抓三種專利期間、營業秘密三要件、競業禁止2年
+- 綜合 10% → 背熟四大IP比較表就能拿分
+` }
+];
+
+const loadProgress = () => { try { const s = localStorage.getItem('ipLawProgress'); return s?JSON.parse(s):{}; } catch { return {}; } };
+const saveProgress = (p) => { try { localStorage.setItem('ipLawProgress', JSON.stringify(p)); } catch {} };
+
+function renderMD(md) {
+  let html = md
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^### (.+)$/gm, '<h3 class="font-display text-xl text-navy mt-5 mb-2 font-semibold">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="font-display text-2xl text-oxblood mt-6 mb-3 font-semibold">$1</h2>')
+    .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-gold pl-4 py-1 my-3 italic text-navy bg-gold/5">$1</blockquote>')
+    .replace(/^---$/gm, '<hr class="my-5 border-slate/20"/>');
+  const tableRegex = /((?:\|[^\n]+\|\n?)+)/g;
+  html = html.replace(tableRegex, (match) => {
+    const rows = match.trim().split('\n').filter(r => r.includes('|'));
+    if (rows.length < 2) return match;
+    const cells = rows.map(r => r.split('|').slice(1, -1).map(c => c.trim()));
+    const isSep = (row) => row.every(c => /^:?-+:?$/.test(c));
+    const header = cells[0];
+    const body = cells.slice(1).filter(r => !isSep(r));
+    return `<table class="my-4 w-full text-sm border-collapse">
+      <thead><tr class="bg-navy/10">${header.map(h => `<th class="px-3 py-2 text-left font-display font-semibold text-navy border-b-2 border-navy/30">${h.replace(/\*\*(.+?)\*\*/g,'$1')}</th>`).join('')}</tr></thead>
+      <tbody>${body.map(row => `<tr class="border-b border-slate/15">${row.map(c => `<td class="px-3 py-2 align-top">${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  });
+  html = html.replace(/^\d+\. (.+)$/gm, '<li class="ml-5 list-decimal">$1</li>');
+  html = html.replace(/^- (.+)$/gm, '<li class="ml-5 list-disc">$1</li>');
+  html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, m => `<ul class="my-2 space-y-1">${m}</ul>`);
+  html = html.split('\n\n').map(p => (p.startsWith('<')||p.trim()==='')?p:`<p class="my-3">${p.replace(/\n/g,'<br/>')}</p>`).join('\n');
+  return html;
+}
+
+function Header({ view, setView }) {
+  return (
+    <header className="border-b border-slate/20 bg-cream/70 backdrop-blur sticky top-0 z-10">
+      <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <div className="text-xs tracking-[0.3em] text-brass uppercase mb-1">Intellectual Property Law</div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-navy leading-tight">
+            科技法導論 <span className="text-oxblood">複習</span>
+          </h1>
+        </div>
+        <nav className="flex gap-1 text-sm flex-wrap">
+          <button onClick={()=>setView('home')} className={`px-3 py-1.5 rounded-full transition-all ${view==='home'?'bg-navy text-cream':'hover:bg-ivory text-slate'}`}>首頁</button>
+          <button onClick={()=>setView('quiz')} className={`px-3 py-1.5 rounded-full transition-all ${view==='quiz'?'bg-navy text-cream':'hover:bg-ivory text-slate'}`}>練習</button>
+          <button onClick={()=>setView('study')} className={`px-3 py-1.5 rounded-full transition-all ${view==='study'?'bg-navy text-cream':'hover:bg-ivory text-slate'}`}>詳解</button>
+          <button onClick={()=>setView('notes')} className={`px-3 py-1.5 rounded-full transition-all ${view==='notes'?'bg-navy text-cream':'hover:bg-ivory text-slate'}`}>重點整理</button>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function Home({ progress, setView }) {
+  const answered = Object.keys(progress).length;
+  const correct = Object.values(progress).filter(p=>p.correct).length;
+  const acc = answered?Math.round(correct/answered*100):0;
+  return (
+    <main className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+      <section className="paper rounded-lg p-8 sm:p-12 mb-8 gilt">
+        <div className="divider-ornament text-xs tracking-[0.3em] uppercase mb-4">智慧財產權</div>
+        <p className="font-serif text-lg leading-relaxed text-ink/90 mb-6">
+          這本筆記涵蓋<strong className="text-oxblood">商標法、著作權法、專利法、營業秘密法</strong>四大領域，共 <strong className="text-oxblood">60 題練習</strong>與五大主題重點整理。題目依考試佔比分配，所有解析皆基於課堂簡報整理。
+        </p>
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
+          <Stat label="商標 35%" value="21" c="oxblood"/>
+          <Stat label="著作 35%" value="21" c="navy"/>
+          <Stat label="專利 10%" value="6" c="brass"/>
+          <Stat label="營秘 10%" value="6" c="steel"/>
+          <Stat label="綜合 10%" value="6" c="gold"/>
+        </div>
+        <div className="flex items-center gap-4 text-sm text-slate mb-6">
+          <span>已作答 <strong className="text-navy">{answered}</strong>/60</span>
+          <span>正確率 <strong className="text-navy">{acc}%</strong></span>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={()=>setView('quiz')} className="btn-navy px-6 py-3 rounded-full font-medium">開始練習 →</button>
+          <button onClick={()=>setView('study')} className="btn-oxblood px-6 py-3 rounded-full font-medium">看詳解</button>
+          <button onClick={()=>setView('notes')} className="px-6 py-3 rounded-full font-medium border-2 border-navy text-navy hover:bg-navy hover:text-cream transition-all">重點整理</button>
+        </div>
+      </section>
+      <section className="grid sm:grid-cols-3 gap-4">
+        <ModeCard title="分類練習" desc="按五大主題練習，即時詳解，自動記錄正確率。" tag="QUIZ" onClick={()=>setView('quiz')}/>
+        <ModeCard title="詳解閱覽" desc="一次展開所有題目與答案，考前快速複習。" tag="STUDY" onClick={()=>setView('study')}/>
+        <ModeCard title="重點整理" desc="五大主題的系統化筆記，含比較表與口訣。" tag="NOTES" onClick={()=>setView('notes')}/>
+      </section>
+    </main>
+  );
+}
+function Stat({label,value,c}) {
+  const map={oxblood:'text-oxblood',navy:'text-navy',brass:'text-brass',steel:'text-steel',gold:'text-gold'};
+  return <div className="text-center"><div className={`font-display text-3xl font-semibold ${map[c]}`}>{value}</div><div className="text-[10px] tracking-wider text-slate uppercase mt-1">{label}</div></div>;
+}
+function ModeCard({title,desc,tag,onClick}) {
+  return (
+    <button onClick={onClick} className="paper rounded-lg p-6 text-left hover:scale-[1.02] transition-transform gilt group">
+      <div className="tag inline-block mb-3 bg-navy text-cream">{tag}</div>
+      <h3 className="font-display text-xl font-semibold text-ink mb-2 group-hover:text-oxblood transition-colors">{title}</h3>
+      <p className="text-sm text-slate leading-relaxed">{desc}</p>
+    </button>
+  );
+}
+
+function TopicFilter({topic,setTopic}) {
+  return (
+    <div className="flex flex-wrap gap-2 mb-6">
+      {TOPICS.map(t=>(
+        <button key={t} onClick={()=>setTopic(t)} className={`px-3 py-1.5 rounded-full text-xs tracking-wider transition-all ${topic===t?'bg-navy text-cream':'bg-cream border border-slate/30 text-slate hover:bg-ivory'}`}>
+          {t==="全部"?"全部":TOPIC_FULL[t]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function QuizMode({progress,setProgress}) {
+  const [topic,setTopic]=useState("全部");
+  const [idx,setIdx]=useState(0);
+  const [sel,setSel]=useState(null);
+  const [show,setShow]=useState(false);
+  const qs=useMemo(()=>topic==="全部"?MC:MC.filter(q=>q.t===topic),[topic]);
+  useEffect(()=>{setIdx(0);setSel(null);setShow(false);},[topic]);
+  if(!qs.length)return null;
+  const q=qs[idx];
+  const choose=(i)=>{
+    if(sel!==null)return;
+    setSel(i);setShow(true);
+    const np={...progress,[q.id]:{selected:i,correct:i===q.a}};
+    setProgress(np);saveProgress(np);
+  };
+  const next=()=>{if(idx<qs.length-1){setIdx(idx+1);setSel(null);setShow(false);}};
+  const prev=()=>{if(idx>0){setIdx(idx-1);setSel(null);setShow(false);}};
+  return (
+    <main className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
+      <TopicFilter topic={topic} setTopic={setTopic}/>
+      <div className="paper rounded-lg p-6 sm:p-8 gilt fade-in" key={q.id}>
+        <div className="flex justify-between items-center mb-6">
+          <span className={`tag bg-${TOPIC_COLOR[q.t]} text-cream`}>{TOPIC_FULL[q.t]}</span>
+          <span className="text-xs text-slate">{idx+1} / {qs.length}</span>
+        </div>
+        <h2 className="font-serif text-lg leading-relaxed text-ink mb-6">
+          <span className="text-oxblood font-display font-semibold mr-2">{q.id}.</span>{q.q}
+        </h2>
+        <div className="space-y-3 mb-6">
+          {q.c.map((c,i)=>{
+            const L=String.fromCharCode(65+i);
+            let cls="choice-btn";
+            if(sel!==null){if(i===q.a)cls+=" correct";else if(i===sel)cls+=" wrong";}
+            return (
+              <button key={i} onClick={()=>choose(i)} disabled={sel!==null} className={`${cls} w-full px-4 py-3 rounded-md flex items-start gap-3`}>
+                <span className="font-display font-semibold text-oxblood shrink-0">{L}.</span>
+                <span className="text-ink/90 leading-relaxed">{c}</span>
+                {sel!==null&&i===q.a&&<span className="ml-auto text-green-700">✓</span>}
+                {sel!==null&&i===sel&&i!==q.a&&<span className="ml-auto text-oxblood">✗</span>}
+              </button>
+            );
+          })}
+        </div>
+        {show&&(
+          <div className="fade-in border-t border-slate/20 pt-5">
+            <div className="divider-ornament text-xs tracking-[0.3em] uppercase mb-3">解析</div>
+            <p className="text-ink/85 leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{__html:q.e.replace(/\*\*(.+?)\*\*/g,'<strong class="text-oxblood">$1</strong>')}}/>
+          </div>
+        )}
+        <div className="flex justify-between items-center mt-6 pt-6 border-t border-slate/15">
+          <button onClick={prev} disabled={idx===0} className="px-4 py-2 text-sm text-slate disabled:opacity-30 hover:text-navy">← 上一題</button>
+          <div className="flex gap-1">
+            {qs.slice(Math.max(0,idx-3),Math.min(qs.length,idx+4)).map((qq,i)=>{
+              const ri=Math.max(0,idx-3)+i;const st=progress[qq.id];
+              return <button key={qq.id} onClick={()=>{setIdx(ri);setSel(null);setShow(false);}} className={`w-2 h-2 rounded-full transition-all ${ri===idx?'w-6 bg-navy':st?.correct?'bg-green-600':st?'bg-oxblood/40':'bg-slate/20'}`}/>;
+            })}
+          </div>
+          <button onClick={next} disabled={idx===qs.length-1} className="px-4 py-2 text-sm text-slate disabled:opacity-30 hover:text-navy">下一題 →</button>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function StudyMode() {
+  const [topic,setTopic]=useState("全部");
+  const [exp,setExp]=useState(new Set());
+  const qs=useMemo(()=>topic==="全部"?MC:MC.filter(q=>q.t===topic),[topic]);
+  const toggle=(id)=>{const n=new Set(exp);n.has(id)?n.delete(id):n.add(id);setExp(n);};
+  return (
+    <main className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
+      <TopicFilter topic={topic} setTopic={setTopic}/>
+      <div className="flex gap-2 mb-4 justify-end">
+        <button onClick={()=>setExp(new Set(qs.map(q=>q.id)))} className="px-3 py-1.5 rounded-full text-xs border border-oxblood text-oxblood hover:bg-oxblood hover:text-cream transition-all">全部展開</button>
+        <button onClick={()=>setExp(new Set())} className="px-3 py-1.5 rounded-full text-xs border border-slate/40 text-slate hover:bg-ivory transition-all">全部收合</button>
+      </div>
+      <div className="space-y-3">
+        {qs.map(q=>(
+          <div key={q.id} className="paper rounded-lg p-5 gilt">
+            <button onClick={()=>toggle(q.id)} className="w-full text-left">
+              <div className="flex items-start gap-3">
+                <span className="font-display font-semibold text-oxblood shrink-0">{q.id}.</span>
+                <div className="flex-1">
+                  <span className={`tag bg-${TOPIC_COLOR[q.t]} text-cream inline-block mb-1`}>{TOPIC_FULL[q.t]}</span>
+                  <p className="font-serif text-base text-ink leading-relaxed">{q.q}</p>
+                </div>
+                <span className={`text-slate text-xl transition-transform ${exp.has(q.id)?'rotate-180':''}`}>⌄</span>
+              </div>
+            </button>
+            {exp.has(q.id)&&(
+              <div className="fade-in mt-4 pt-4 border-t border-slate/15">
+                <div className="space-y-2 mb-4">
+                  {q.c.map((c,i)=>(
+                    <div key={i} className={`px-3 py-2 rounded text-sm leading-relaxed flex items-start gap-2 ${i===q.a?'bg-navy/8 border-l-3 border-navy text-navy font-medium':'text-ink/70'}`}>
+                      <span className="font-display font-semibold shrink-0">{String.fromCharCode(65+i)}.</span><span>{c}</span>
+                      {i===q.a&&<span className="ml-auto">✓ 正解</span>}
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-ivory/70 rounded-md p-4 border-l-4 border-oxblood">
+                  <div className="text-xs tracking-[0.2em] uppercase text-oxblood mb-2 font-medium">詳解</div>
+                  <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{__html:q.e.replace(/\*\*(.+?)\*\*/g,'<strong class="text-oxblood">$1</strong>')}}/>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+function NotesMode() {
+  const [sel,setSel]=useState("商標");
+  const note=NOTES.find(n=>n.id===sel);
+  return (
+    <main className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+      <div className="grid lg:grid-cols-[220px_1fr] gap-6">
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="paper rounded-lg p-4 gilt">
+            <div className="text-xs tracking-[0.3em] uppercase text-brass mb-3 px-2">主題</div>
+            <div className="space-y-1">
+              {NOTES.map(n=>(
+                <button key={n.id} onClick={()=>setSel(n.id)} className={`w-full text-left px-3 py-2 rounded text-sm transition-all flex justify-between items-center ${sel===n.id?'bg-navy text-cream':'hover:bg-ivory text-ink/70'}`}>
+                  <span>{n.title.replace('重點整理','').replace('比較重點整理','比較')}</span>
+                  <span className={`text-xs ${sel===n.id?'text-cream/70':'text-slate'}`}>{n.weight}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+        <div className="paper rounded-lg p-6 sm:p-10 gilt fade-in" key={sel}>
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="font-serif text-3xl font-bold text-navy">{note.title}</h2>
+            <span className="tag bg-oxblood text-cream">{note.weight}</span>
+          </div>
+          <div className="divider-ornament text-xs tracking-[0.3em] uppercase mb-5">Summary</div>
+          <article className="notes-content text-ink/85" dangerouslySetInnerHTML={{__html:renderMD(note.body)}}/>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function App() {
+  const [view,setView]=useState('home');
+  const [progress,setProgress]=useState(loadProgress());
+  return (
+    <div className="min-h-screen">
+      <Header view={view} setView={setView}/>
+      {view==='home'&&<Home progress={progress} setView={setView}/>}
+      {view==='quiz'&&<QuizMode progress={progress} setProgress={setProgress}/>}
+      {view==='study'&&<StudyMode/>}
+      {view==='notes'&&<NotesMode/>}
+      <footer className="max-w-5xl mx-auto px-4 py-8 text-center text-xs text-slate/70 tracking-wider">
+        ◆ 科技法導論複習筆記 · 智慧財產權 · for Winona ◆
+      </footer>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
