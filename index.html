@@ -789,24 +789,57 @@ function TopicFilter({topic,setTopic}) {
 
 function QuizMode({progress,setProgress,unfam,toggleUnfam}) {
   const [topic,setTopic]=useState("全部");
+  const [onlyUnans,setOnlyUnans]=useState(false);
+  const [frozen,setFrozen]=useState([]);
   const [idx,setIdx]=useState(0);
   const [sel,setSel]=useState(null);
   const [show,setShow]=useState(false);
-  const qs=useMemo(()=>topic==="全部"?MC:MC.filter(q=>q.t===topic),[topic]);
-  useEffect(()=>{setIdx(0);setSel(null);setShow(false);},[topic]);
-  if(!qs.length)return null;
+  const base=useMemo(()=>topic==="全部"?MC:MC.filter(q=>q.t===topic),[topic]);
+  const qs=useMemo(()=>onlyUnans?base.filter(q=>frozen.includes(q.id)):base,[base,onlyUnans,frozen]);
+  const unansCount=base.filter(q=>!(q.id in progress)).length;
+  // 進入練習或切換時，自動跳到第一題沒寫過的；開啟「只練沒寫過」時凍結當下未作答清單
+  useEffect(()=>{
+    if(onlyUnans){
+      const ids=base.filter(q=>!(q.id in progress)).map(q=>q.id);
+      setFrozen(ids); setIdx(0);
+    } else {
+      const f=base.findIndex(q=>!(q.id in progress));
+      setIdx(f>=0?f:0);
+    }
+    setSel(null); setShow(false);
+  },[topic,onlyUnans]);
+  if(!base.length)return null;
   const q=qs[idx];
   const choose=(i)=>{
-    if(sel!==null)return;
+    if(sel!==null||!q)return;
     setSel(i);setShow(true);
     const np={...progress,[q.id]:{selected:i,correct:i===q.a}};
     setProgress(np);saveProgress(np);
   };
   const next=()=>{if(idx<qs.length-1){setIdx(idx+1);setSel(null);setShow(false);}};
   const prev=()=>{if(idx>0){setIdx(idx-1);setSel(null);setShow(false);}};
+  const jumpNextUnans=()=>{
+    let n=-1;
+    for(let k=idx+1;k<qs.length;k++){ if(!(qs[k].id in progress)){n=k;break;} }
+    if(n===-1){ for(let k=0;k<qs.length;k++){ if(!(qs[k].id in progress)){n=k;break;} } }
+    if(n>=0){ setIdx(n); setSel(null); setShow(false); }
+  };
   return (
     <main className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
       <TopicFilter topic={topic} setTopic={setTopic}/>
+      <div className="flex flex-wrap items-center gap-3 mb-6 -mt-2">
+        <button onClick={()=>setOnlyUnans(v=>!v)} className={`px-4 py-1.5 rounded-full text-xs tracking-wider transition-all ${onlyUnans?'bg-steel text-cream':'bg-cream border border-steel/50 text-steel hover:bg-steel/10'}`}>
+          {onlyUnans?'✓ 只練沒寫過':'只練沒寫過'} ({unansCount})
+        </button>
+        <span className="text-xs text-slate">{onlyUnans?'已過濾掉做過的題目':'自動從第一題沒寫過的開始'}</span>
+      </div>
+      {!q ? (
+        <div className="paper rounded-lg p-10 gilt text-center">
+          <div className="text-4xl mb-3 text-steel">✓</div>
+          <p className="font-display text-xl text-navy mb-2">這個範圍的題目都寫過了！</p>
+          <p className="text-sm text-slate">可以切換主題、關閉「只練沒寫過」，或到複習區加強錯題與不熟的題目。</p>
+        </div>
+      ) : (
       <div className="paper rounded-lg p-6 sm:p-8 gilt fade-in" key={q.id}>
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
@@ -855,7 +888,13 @@ function QuizMode({progress,setProgress,unfam,toggleUnfam}) {
           </div>
           <button onClick={next} disabled={idx===qs.length-1} className="px-4 py-2 text-sm text-slate disabled:opacity-30 hover:text-navy">下一題 →</button>
         </div>
+        {unansCount>0 && (
+          <div className="mt-4 text-center">
+            <button onClick={jumpNextUnans} className="text-xs text-steel hover:text-navy underline underline-offset-4">跳到下一題沒寫過的 →</button>
+          </div>
+        )}
       </div>
+      )}
     </main>
   );
 }
